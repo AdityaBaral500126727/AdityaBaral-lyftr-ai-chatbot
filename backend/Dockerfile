@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+# Supports both repo root context (Render) and backend context (docker compose)
+COPY backend/requirements.txt* requirements.txt* ./
 RUN pip install --no-cache-dir --user -r requirements.txt
 
 # ==========================================
@@ -28,7 +29,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/root/.local/bin:$PATH"
 
 COPY --from=builder /root/.local /root/.local
-COPY app/ ./app/
+COPY backend/app/ ./app/
 
 # Create directory for persistent SQLite database
 RUN mkdir -p /data
@@ -38,5 +39,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=5s --start-period=5s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
+# Automatically uses Render's $PORT or defaults to 8000
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
