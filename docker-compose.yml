@@ -1,0 +1,37 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lyftr-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - LLM_API_KEYS=${LLM_API_KEYS}
+      - DATABASE_URL=sqlite:////data/app.db
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+      - ENABLE_FAILURE_SIMULATION=${ENABLE_FAILURE_SIMULATION:-true}
+      - PRIMARY_MODEL=${PRIMARY_MODEL:-gemini/gemini-3.5-flash}
+      - FALLBACK_MODEL=${FALLBACK_MODEL:-groq/openai/gpt-oss-20b}
+      - DEFAULT_SYSTEM_PROMPT=${DEFAULT_SYSTEM_PROMPT:-You are Lyftr AI, a helpful assistant.}
+    volumes:
+      - sqlite_data:/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-}
+    container_name: lyftr-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
+    driver: local
+
