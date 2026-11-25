@@ -34,11 +34,16 @@ _DETERMINISTIC_CACHE: Dict[str, Dict[str, Any]] = {}
 def get_model_for_key(key: str, index: int) -> str:
     """Selects the optimal model for a given key."""
     if key.startswith("AQ.") or key.startswith("AIzaSy"):
-        return settings.PRIMARY_MODEL
-    if key.startswith("gsk_"):
-        return settings.FALLBACK_MODEL
-    # Default alternate assignment if generic keys
-    return settings.PRIMARY_MODEL if index == 0 else settings.FALLBACK_MODEL
+        model = settings.PRIMARY_MODEL
+    elif key.startswith("gsk_"):
+        model = settings.FALLBACK_MODEL
+    else:
+        model = settings.PRIMARY_MODEL if index == 0 else settings.FALLBACK_MODEL
+
+    # Gracefully upgrade any legacy or exhausted flash model to high-quota flash-lite
+    if model in ("gemini/gemini-3.5-flash", "gemini-3.5-flash"):
+        model = "gemini/gemini-3.5-flash-lite"
+    return model
 
 
 def parse_simulate_failure_header(header_val: Optional[str]) -> Dict[str, int]:

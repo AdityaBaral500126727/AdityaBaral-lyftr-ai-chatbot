@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./app.db"
     ALLOWED_ORIGINS: str = "*"
     ENABLE_FAILURE_SIMULATION: bool = True
-    PRIMARY_MODEL: str = "gemini/gemini-3.5-flash"
+    PRIMARY_MODEL: str = "gemini/gemini-3.5-flash-lite"
     FALLBACK_MODEL: str = "groq/openai/gpt-oss-20b"
     LLM_TIMEOUT: float = 35.0
     DEFAULT_SYSTEM_PROMPT: str = (
