@@ -113,6 +113,11 @@ async def dispatch_chat_request(
     # Cache check: only if NOT simulating failure
     if not is_simulating:
         cached = check_cache(cache_key)
+        # If multi-turn conversation and exact context not cached, check standalone prompt (system + current message)
+        if cached is None and len(messages) > 2:
+            standalone_key = compute_cache_key(primary_model, [messages[0], messages[-1]])
+            cached = check_cache(standalone_key)
+
         if cached is not None:
             latency_ms = max(1, int(round((time.perf_counter() - start_time) * 1000)))
             meta = ChatMetadata(
